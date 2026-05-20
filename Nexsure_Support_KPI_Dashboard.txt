@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nexsure Support — Executive KPI Dashboard</title>
+
+  <!-- Google Fonts only -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.08);
+      --border: rgba(255,255,255,.10);
+      --text: rgba(255,255,255,.88);
+      --muted: rgba(255,255,255,.62);
+      --dim: rgba(255,255,255,.45);
+      --shadow: 0 14px 40px rgba(0,0,0,.38);
+      --radius: 18px;
+
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --bad:  #ef4444;
+      --info: #60a5fa;
+
+      --mono: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    body{
+      margin:0;
+      background: radial-gradient(1100px 600px at 20% -10%, rgba(96,165,250,.20), transparent 55%),
+                  radial-gradient(900px 500px at 85% 0%, rgba(168,85,247,.18), transparent 60%),
+                  radial-gradient(900px 600px at 60% 110%, rgba(20,184,166,.14), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      letter-spacing: .1px;
+    }
+
+    .wrap{
+      max-width: 1180px;
+      margin: 28px auto 44px;
+      padding: 0 18px;
+    }
+
+    header{
+      display:flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 18px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    h1{
+      margin:0;
+      font-size: 30px;
+      line-height: 1.1;
+      letter-spacing: -0.4px;
+    }
+
+    .subtitle{
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip{
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(255,255,255,.80);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      padding: 6px 10px;
+      border-radius: 999px;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.045));
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      overflow:hidden;
+    }
+
+    .card .hd{
+      padding: 14px 16px 0 16px;
+      display:flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .card .title{
+      font-size: 14px;
+      color: rgba(255,255,255,.82);
+      font-weight: 650;
+      letter-spacing: .1px;
+    }
+
+    .card .hint{
+      color: var(--dim);
+      font-size: 12px;
+      font-family: var(--mono);
+      text-align:right;
+      white-space: nowrap;
+    }
+
+    .card .bd{
+      padding: 14px 16px 16px 16px;
+    }
+
+    /* KPI */
+    .kpi{
+      display:flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .kpi .value{
+      font-size: 30px;
+      font-weight: 750;
+      letter-spacing: -0.6px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .kpi .unit{
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+
+    .kpi .delta{
+      margin-top: 10px;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .badge{
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.82);
+      white-space: nowrap;
+    }
+    .badge.good{ border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.12); }
+    .badge.warn{ border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); }
+    .badge.bad{  border-color: rgba(239,68,68,.35);  background: rgba(239,68,68,.12); }
+    .badge.info{ border-color: rgba(96,165,250,.35); background: rgba(96,165,250,.12); }
+
+    .spark{
+      width: 170px;
+      height: 54px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+      flex: 0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    /* Executive summary layout */
+    .cols{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .bullets{
+      margin:0;
+      padding-left: 18px;
+      color: rgba(255,255,255,.80);
+    }
+    .bullets li{ margin: 6px 0; }
+
+    .callout{
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .label{
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(255,255,255,.68);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 6px;
+    }
+
+    .bigline{
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -.2px;
+      margin: 2px 0 10px;
+      color: rgba(255,255,255,.90);
+    }
+
+    /* Drivers bars */
+    .barRow{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+    .barRow:first-child{ border-top: none; padding-top: 0; }
+    .barLeft{ min-width: 160px; color: rgba(255,255,255,.82); font-size: 13px; }
+    .barRight{ display:flex; align-items:center; gap: 10px; flex: 1; }
+    .barTrack{
+      flex: 1;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+    }
+    .barFill{
+      height: 100%;
+      border-radius: 999px;
+      width: 0%;
+      background: rgba(96,165,250,.85);
+      transition: width .35s ease;
+    }
+    .barNum{
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(255,255,255,.78);
+      min-width: 52px;
+      text-align: right;
+    }
+
+    /* Trend bar (net inflow/outflow) */
+    .trend-line{
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    /* SLA target line */
+    .targetWrap{ margin-top: 10px; }
+    .targetTrack{
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .targetFill{
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: rgba(34,197,94,.70);
+    }
+    .targetMarker{
+      position:absolute;
+      top:-6px;
+      width: 2px;
+      height: 22px;
+      background: rgba(255,255,255,.70);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.08);
+      border-radius: 2px;
+    }
+    .targetLegend{
+      display:flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(255,255,255,.70);
+    }
+
+    /* details collapse */
+    details{
+      border-top: 1px solid rgba(255,255,255,.08);
+      margin-top: 10px;
+      padding-top: 10px;
+    }
+    summary{
+      cursor: pointer;
+      list-style: none;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(255,255,255,.75);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    summary::-webkit-details-marker{ display:none; }
+    .chev{
+      width: 8px; height: 8px;
+      border-right: 2px solid rgba(255,255,255,.6);
+      border-bottom: 2px solid rgba(255,255,255,.6);
+      transform: rotate(-45deg);
+      margin-top: 1px;
+      transition: transform .2s ease;
+    }
+    details[open] .chev{ transform: rotate(45deg); }
+
+    /* Toggle */
+    .toggle-group{
+      display:flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .toggle{
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 12px;
+      background: rgba(255,255,255,.05);
+      user-select: none;
+    }
+    .toggle.active{
+      background: rgba(96,165,250,.25);
+      border-color: rgba(96,165,250,.5);
+    }
+
+    /* Layout */
+    .span-3{ grid-column: span 3; }
+    .span-4{ grid-column: span 4; }
+    .span-5{ grid-column: span 5; }
+    .span-6{ grid-column: span 6; }
+    .span-7{ grid-column: span 7; }
+    .span-12{ grid-column: span 12; }
+
+    @media (max-width: 1100px){
+      .span-3,.span-4,.span-5,.span-6,.span-7,.span-12{ grid-column: span 12; }
+      .spark{ width: 100%; }
+      .cols{ grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <!-- =========================
+       WEEKLY EDIT ZONE (DATA)
+       ========================= -->
+  <script>
+  const DATA = {
+    teamName: "Nexsure Support",
+    reportingTo: "Lis Fannin",
+    weekOf: "May 20, 2026",
+    dataAsOf: "May 20, 2026 8:30 AM CT",  // optional: for exec confidence
+
+    // EXECUTIVE MESSAGE (what leaders care about)
+    executive: {
+      headline: "Backlog stable; SLA on target; response time slightly elevated.",
+      wins: [
+        "Example win: Reduced aged queue (15+ days) by 10% week-over-week.",
+        "Example win: Closed high-impact tickets related to billing corrections."
+      ],
+      risks: [
+        "Example risk: Spike in new tickets tied to integration user access changes.",
+        "Example risk: SLA breaches concentrated in one category (see drivers)."
+      ],
+      asks: [
+        "Decision/Ask: Approve 1 hour weekly with Integration team for recurring credential resets.",
+        "Decision/Ask: Confirm priority for top 2 automation candidates to reduce Level-1 workload."
+      ]
+    },
+
+    // Core KPIs (overall)
+    kpis: {
+      openTickets:      { label: "Backlog (Open Tickets)", value: 0, unit: "tickets", direction: "lower" },
+      openedPriorDay:   { label: "Opened Prior Day", value: 0, unit: "tickets", direction: "neutral" },
+      timeToRepair:     { label: "Avg Time to Repair", value: 0, unit: "hours", direction: "lower", thresholds: { warn: 24, bad: 48 } },
+      responseTime:     { label: "Avg Time to Respond", value: 0, unit: "hours", direction: "lower", thresholds: { warn: 2,  bad: 4  } }
+    },
+
+    // SLA as % (breach rate) + target shown as compliance %
+    sla: {
+      label: "SLA Compliance",
+      breached: 0,
+      measured: 0,
+      thresholdsBreachPct: { warn: 5, bad: 10 }, // higher breach % worse
+      targetCompliancePct: 95
+    },
+
+    // Weekly flow (overall)
+    inflowOutflow: { opened: 0, closed: 0 },
+
+    // Daily intake trend (last N days)
+    daily: {
+      labels: ["D-6","D-5","D-4","D-3","D-2","D-1","Today"],
+      opened: [0,0,0,0,0,0,0],
+      closed: [0,0,0,0,0,0,0]
+    },
+
+    // Top Drivers (exec-friendly: what’s causing backlog / breaches)
+    drivers: {
+      backlogDrivers: [
+        { label: "Access / Provisioning", value: 0 },
+        { label: "Billing Issues", value: 0 },
+        { label: "Integrations", value: 0 },
+        { label: "Other", value: 0 }
+      ],
+      slaBreachDrivers: [
+        { label: "Awaiting User Response", value: 0 },
+        { label: "Complexity/Approvals", value: 0 },
+        { label: "Dependency (Dyad/Other)", value: 0 }
+      ]
+    },
+
+    // Weekly history for sparklines (last 8 weeks; most recent last)
+    history: {
+      openTickets:    [0,0,0,0,0,0,0,0],
+      openedPriorDay: [0,0,0,0,0,0,0,0],
+      timeToRepair:   [0,0,0,0,0,0,0,0],
+      responseTime:   [0,0,0,0,0,0,0,0],
+      slaBreachPct:   [0,0,0,0,0,0,0,0],
+      netFlow:        [0,0,0,0,0,0,0,0]
+    },
+
+    // Technician-level scope (collapsed under "Details")
+    technicians: [
+      { name: "MM", openTickets: 0, openedPriorDay: 0, timeToRepair: 0, responseTime: 0, slaBreached: 0, slaMeasured: 0, opened: 0, closed: 0, dailyOpened: [0,0,0,0,0,0,0], dailyClosed:[0,0,0,0,0,0,0] },
+      { name: "MF", openTickets: 0, openedPriorDay: 0, timeToRepair: 0, responseTime: 0, slaBreached: 0, slaMeasured: 0, opened: 0, closed: 0, dailyOpened: [0,0,0,0,0,0,0], dailyClosed:[0,0,0,0,0,0,0] },
+      { name: "BH", openTickets: 0, openedPriorDay: 0, timeToRepair: 0, responseTime: 0, slaBreached: 0, slaMeasured: 0, opened: 0, closed: 0, dailyOpened: [0,0,0,0,0,0,0], dailyClosed:[0,0,0,0,0,0,0] }
+    ]
+  };
+  </script>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1 id="hdrTitle">Nexsure Support</h1>
+        <div class="subtitle">
+          <span class="chip" id="hdrWeek">Week of …</span>
+          <span class="chip" id="hdrAudience">Reporting to …</span>
+          <span class="chip" id="hdrAsOf">As of …</span>
+          <span class="chip">Executive KPI View</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <!-- EXECUTIVE SUMMARY (top) -->
+      <div class="card span-12" id="card-exec"></div>
+
+      <!-- EXECUTIVE SNAPSHOT (4 tiles) -->
+      <div class="card span-3" id="kpi-openTickets"></div>
+      <div class="card span-3" id="kpi-sla"></div>
+      <div class="card span-3" id="kpi-timeToRepair"></div>
+      <div class="card span-3" id="kpi-responseTime"></div>
+
+      <!-- DRIVERS + FLOW -->
+      <div class="card span-7" id="card-drivers"></div>
+      <div class="card span-5" id="card-flow"></div>
+
+      <!-- DETAILS (collapsed) -->
+      <div class="card span-12" id="card-details"></div>
+    </section>
+  </div>
+
+  <script>
+    // ===== Helpers =====
+    const $ = (id) => document.getElementById(id);
+    const fmt = (n) => (typeof n === "number" ? n.toLocaleString() : n);
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    function pct(n, d){ return (!d || d <= 0) ? 0 : (n / d) * 100; }
+    function fmtPct(v, decimals = 1){ return `${Number(v || 0).toFixed(decimals)}%`; }
+
+    // Lower is better
+    function statusLower(value, thresholds){
+      if (!thresholds) return "info";
+      if (value >= thresholds.bad) return "bad";
+      if (value >= thresholds.warn) return "warn";
+      return "good";
+    }
+
+    // Neutral (no thresholds)
+    function statusNeutral(){ return "info"; }
+
+    function delta(series, decimals = 0, suffix = ""){
+      if (!series || series.length < 2) return null;
+      const prev = series[series.length - 2];
+      const cur  = series[series.length - 1];
+      if (typeof prev !== "number" || typeof cur !== "number") return null;
+      const diff = cur - prev;
+      const sign = diff > 0 ? "+" : "";
+      return `${sign}${diff.toFixed(decimals)}${suffix}`;
+    }
+
+    // Simple sparkline SVG (no deps)
+    function spark(values, color="rgba(96,165,250,.95)"){
+      const w=160, h=46, pad=6;
+      const v=(values||[]).map(x=> typeof x==="number" ? x : 0);
+      const min=Math.min(...v, 0);
+      const max=Math.max(...v, 1);
+      const span=(max-min)||1;
+      const n=v.length;
+
+      const x=(i)=> pad + (i*(w-pad*2)/Math.max(1,n-1));
+      const y=(val)=> pad + (h-pad*2)*(1-((val-min)/span));
+
+      let d="";
+      v.forEach((val,i)=> d += (i===0 ? "M":"L") + x(i).toFixed(2) + "," + y(val).toFixed(2));
+      const dArea = d + ` L ${x(n-1).toFixed(2)},${(h-pad).toFixed(2)} L ${x(0).toFixed(2)},${(h-pad).toFixed(2)} Z`;
+
+      return `
+        <svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+          <path d="${dArea}" fill="${color}" opacity="0.14"></path>
+          <path d="${d}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      `;
+    }
+
+    // Dual spark (opened vs closed)
+    function dualSpark(a, b){
+      const w=160, h=46, pad=6;
+      const A=(a||[]).map(x=> typeof x==="number"?x:0);
+      const B=(b||[]).map(x=> typeof x==="number"?x:0);
+      const all=A.concat(B);
+      const min=Math.min(...all, 0);
+      const max=Math.max(...all, 1);
+      const span=(max-min)||1;
+      const n=Math.max(A.length, B.length);
+
+      const x=(i)=> pad + (i*(w-pad*2)/Math.max(1,n-1));
+      const y=(val)=> pad + (h-pad*2)*(1-((val-min)/span));
+
+      function path(v){
+        let d="";
+        v.forEach((val,i)=> d += (i===0 ? "M":"L") + x(i).toFixed(2) + "," + y(val).toFixed(2));
+        return d;
+      }
+
+      return `
+        <svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+          <path d="${path(B)}" fill="none" stroke="rgba(34,197,94,.95)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="${path(A)}" fill="none" stroke="rgba(239,68,68,.95)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      `;
+    }
+
+    function escapeHtml(s){
+      return (""+s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    }
+
+    // ===== Scope (All vs Tech) =====
+    let selectedTech = "ALL";
+    function techObj(){
+      if (selectedTech === "ALL") return null;
+      return (DATA.technicians || []).find(t => t.name === selectedTech) || null;
+    }
+
+    function scopedValue(key){
+      const t = techObj();
+      if (!t) return DATA.kpis[key].value;
+      return (typeof t[key] === "number") ? t[key] : DATA.kpis[key].value;
+    }
+
+    function scopedFlow(){
+      const t = techObj();
+      if (!t) return DATA.inflowOutflow;
+      return { opened: t.opened || 0, closed: t.closed || 0 };
+    }
+
+    function scopedDaily(){
+      const t = techObj();
+      if (!t) return DATA.daily;
+      return {
+        labels: DATA.daily.labels,
+        opened: Array.isArray(t.dailyOpened) ? t.dailyOpened : DATA.daily.opened,
+        closed: Array.isArray(t.dailyClosed) ? t.dailyClosed : DATA.daily.closed
+      };
+    }
+
+    function scopedSla(){
+      const t = techObj();
+      if (!t) return { breached: DATA.sla.breached, measured: DATA.sla.measured };
+      return { breached: t.slaBreached || 0, measured: t.slaMeasured || 0 };
+    }
+
+    // ===== Renderers =====
+    function renderHeader(){
+      $("hdrTitle").textContent = DATA.teamName || "Support KPI Dashboard";
+      $("hdrWeek").textContent = `Week of ${DATA.weekOf || ""}`;
+      $("hdrAudience").textContent = `Reporting to ${DATA.reportingTo || ""}`;
+      $("hdrAsOf").textContent = `As of ${DATA.dataAsOf || DATA.weekOf || ""}`;
+    }
+
+    function renderExecSummary(){
+      const ex = DATA.executive || { headline:"", wins:[], risks:[], asks:[] };
+
+      $("card-exec").innerHTML = `
+        <div class="hd">
+          <div class="title">Executive Summary</div>
+          <div class="hint">What matters this week</div>
+        </div>
+        <div class="bd">
+          <div class="cols">
+            <div class="callout">
+              <div class="label">Headline</div>
+              <div class="bigline">${escapeHtml(ex.headline || "—")}</div>
+
+              <div class="label">Wins</div>
+              ${ex.wins && ex.wins.length ? `<ul class="bullets">${ex.wins.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>` : `<div style="color:var(--dim);">Add DATA.executive.wins</div>`}
+
+              <div style="height:10px;"></div>
+
+              <div class="label">Risks / Watch Items</div>
+              ${ex.risks && ex.risks.length ? `<ul class="bullets">${ex.risks.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>` : `<div style="color:var(--dim);">Add DATA.executive.risks</div>`}
+            </div>
+
+            <div class="callout">
+              <div class="label">Asks / Decisions</div>
+              ${ex.asks && ex.asks.length ? `<ul class="bullets">${ex.asks.map(x=>`<li><strong>${escapeHtml(x)}</strong></li>`).join("")}</ul>` : `<div style="color:var(--dim);">Add DATA.executive.asks</div>`}
+
+              <div style="height:10px;"></div>
+              <div class="label">Scope</div>
+              <div style="color:rgba(255,255,255,.82); font-family:var(--mono); font-size:12px;">
+                View: ${selectedTech === "ALL" ? "All technicians" : selectedTech}
+              </div>
+              <div style="margin-top:8px; color:var(--dim); font-size:12px;">
+                Tip: Keep asks to 1–2 items max for leadership action.
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderKpiCard(id, key, historyKey, thresholds=null, valueFormatter=null){
+      const val = scopedValue(key);
+      const series = (DATA.history && DATA.history[historyKey]) ? DATA.history[historyKey] : [];
+      const d = delta(series, (key.includes("time") ? 1 : 0), "");
+      const badge = thresholds ? statusLower(val, thresholds) : statusNeutral();
+
+      const unit = DATA.kpis[key].unit || "";
+      const displayVal = valueFormatter ? valueFormatter(val) : fmt(val);
+
+      $(id).innerHTML = `
+        <div class="hd">
+          <div class="title">${escapeHtml(DATA.kpis[key].label)}</div>
+          <div class="hint">${d ? `Δ WoW: ${escapeHtml(d)}` : " "}</div>
+        </div>
+        <div class="bd">
+          <div class="kpi">
+            <div>
+              <div class="value">${displayVal}</div>
+              <div class="unit">${escapeHtml(unit)}</div>
+              <div class="delta">
+                <span class="badge ${badge}">${badge.toUpperCase()}</span>
+                ${thresholds ? `<span style="color:var(--dim)">Auto-thresholded</span>` : `<span style="color:var(--dim)">Snapshot</span>`}
+              </div>
+            </div>
+            <div class="spark">${spark(series)}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSla(){
+      const { breached, measured } = scopedSla();
+      const breachPct = pct(breached, measured);
+      const compliancePct = clamp(100 - breachPct, 0, 100);
+
+      const status = statusLower(breachPct, DATA.sla.thresholdsBreachPct);
+      const series = (DATA.history && DATA.history.slaBreachPct) ? DATA.history.slaBreachPct : [];
+      const d = delta(series, 1, "%");
+
+      const target = clamp(DATA.sla.targetCompliancePct || 0, 0, 100);
+      const fillW = compliancePct;
+      const markerLeft = target;
+
+      $("kpi-sla").innerHTML = `
+        <div class="hd">
+          <div class="title">${escapeHtml(DATA.sla.label)}</div>
+          <div class="hint">Target: ${fmtPct(target, 0)}</div>
+        </div>
+        <div class="bd">
+          <div class="kpi">
+            <div>
+              <div class="value">${fmtPct(compliancePct, 1)}</div>
+              <div class="unit">Compliance</div>
+              <div class="delta">
+                <span class="badge ${status}">${status.toUpperCase()}</span>
+                <span>Breach: <span style="font-family:var(--mono)">${fmtPct(breachPct, 1)}</span></span>
+                ${measured ? `<span style="color:var(--dim)">(${breached}/${measured})</span>` : `<span style="color:var(--dim)">No SLA-measured tickets</span>`}
+                ${d ? `<span style="color:var(--dim)">Δ WoW: ${d}</span>` : ""}
+              </div>
+            </div>
+            <div class="spark">${spark(series, "rgba(245,158,11,.95)")}</div>
+          </div>
+
+          <div class="targetWrap">
+            <div class="targetTrack" aria-hidden="true">
+              <div class="targetFill" style="width:${fillW.toFixed(1)}%; background:${status==="bad" ? "rgba(239,68,68,.70)" : status==="warn" ? "rgba(245,158,11,.70)" : "rgba(34,197,94,.70)"}"></div>
+              <div class="targetMarker" style="left:${markerLeft.toFixed(1)}%"></div>
+            </div>
+            <div class="targetLegend">
+              <span>0%</span><span></span><span>100%</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDrivers(){
+      const drv = DATA.drivers || { backlogDrivers:[], slaBreachDrivers:[] };
+
+      function bars(list, color){
+        const max = Math.max(1, ...list.map(x => x.value || 0));
+        return list.map((x) => {
+          const w = clamp(((x.value || 0) / max) * 100, 0, 100);
+          return `
+            <div class="barRow">
+              <div class="barLeft">${escapeHtml(x.label)}</div>
+              <div class="barRight">
+                <div class="barTrack"><div class="barFill" style="width:${w.toFixed(1)}%; background:${color};"></div></div>
+                <div class="barNum">${fmt(x.value || 0)}</div>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      $("card-drivers").innerHTML = `
+        <div class="hd">
+          <div class="title">Top Drivers</div>
+          <div class="hint">What’s driving volume & SLA</div>
+        </div>
+        <div class="bd">
+          <div class="label">Backlog drivers (counts)</div>
+          ${drv.backlogDrivers && drv.backlogDrivers.length ? bars(drv.backlogDrivers, "rgba(96,165,250,.85)") : `<div style="color:var(--dim)">Add DATA.drivers.backlogDrivers</div>`}
+          <div style="height:12px;"></div>
+          <div class="label">SLA breach drivers (counts)</div>
+          ${drv.slaBreachDrivers && drv.slaBreachDrivers.length ? bars(drv.slaBreachDrivers, "rgba(245,158,11,.85)") : `<div style="color:var(--dim)">Add DATA.drivers.slaBreachDrivers</div>`}
+        </div>
+      `;
+    }
+
+    function renderFlow(){
+      const { opened, closed } = scopedFlow();
+      const net = opened - closed;
+      const width = clamp(Math.abs(net) * 5, 0, 100);
+      const color = net > 0 ? "var(--bad)" : net < 0 ? "var(--good)" : "rgba(255,255,255,.35)";
+
+      const series = (DATA.history && DATA.history.netFlow) ? DATA.history.netFlow : [];
+      const d = delta(series, 0, "");
+
+      const daily = scopedDaily();
+      const openedSum = (daily.opened || []).reduce((a,b)=>a+b,0);
+      const closedSum = (daily.closed || []).reduce((a,b)=>a+b,0);
+
+      $("card-flow").innerHTML = `
+        <div class="hd">
+          <div class="title">Flow & Momentum</div>
+          <div class="hint">Backlog movement</div>
+        </div>
+        <div class="bd">
+          <div class="kpi">
+            <div>
+              <div class="value">${net}</div>
+              <div class="unit">Net (Opened − Closed)</div>
+              <div class="delta">
+                <span class="badge ${net > 0 ? "bad" : net < 0 ? "good" : "info"}">${net > 0 ? "UP" : net < 0 ? "DOWN" : "FLAT"}</span>
+                <span style="color:var(--dim)">${net > 0 ? "Backlog growing" : net < 0 ? "Backlog shrinking" : "Stable"}</span>
+                ${d ? `<span style="color:var(--dim)">Δ WoW: ${d}</span>` : ""}
+              </div>
+            </div>
+            <div class="spark">${spark(series, "rgba(96,165,250,.95)")}</div>
+          </div>
+
+          <div class="kv">
+            <div class="k">Opened (last ${daily.opened.length} days)</div><div class="v">${openedSum}</div>
+            <div class="k">Closed (last ${daily.closed.length} days)</div><div class="v">${closedSum}</div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <div class="label">Daily intake trend</div>
+            <div class="kpi">
+              <div style="color:var(--dim); font-size:12px;">
+                Opened (red) vs Closed (green)
+              </div>
+              <div class="spark">${dualSpark(daily.opened, daily.closed)}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDetails(){
+      const daily = scopedDaily();
+
+      $("card-details").innerHTML = `
+        <div class="hd">
+          <div class="title">Details</div>
+          <div class="hint">Expanded view (optional)</div>
+        </div>
+        <div class="bd">
+          <details>
+            <summary><span class="chev"></span> Technician scope (All / MM / MF / BH)</summary>
+            <div style="margin-top:12px;">
+              <div class="toggle-group">
+                ${["ALL", ...(DATA.technicians || []).map(t=>t.name)].map(n => `
+                  <div class="toggle ${n === selectedTech ? "active" : ""}" onclick="selectTech('${n}')">
+                    ${n === "ALL" ? "All" : n}
+                  </div>
+                `).join("")}
+              </div>
+              <div style="color:var(--dim); font-size:12px;">
+                Toggle updates all snapshot KPIs + SLA + flow + trends for the selected technician.
+              </div>
+            </div>
+          </details>
+
+          <details>
+            <summary><span class="chev"></span> Data notes</summary>
+            <div style="margin-top:12px; color:rgba(255,255,255,.75); font-size:13px; line-height:1.45;">
+              <ul class="bullets">
+                <li>Thresholds are auto-applied (SLA breach %, response hours, repair hours).</li>
+                <li>Keep the executive headline concise: status + change + ask.</li>
+                <li>If a metric is not measured (denominator = 0), SLA shows “No SLA-measured tickets.”</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      `;
+    }
+
+    // ===== Wiring =====
+    window.selectTech = function(name){
+      selectedTech = name;
+      renderAll();
+    };
+
+    function renderAll(){
+      renderHeader();
+      renderExecSummary();
+
+      // Executive snapshot tiles
+      renderKpiCard("kpi-openTickets", "openTickets", "openTickets", null);
+      renderSla();
+      renderKpiCard("kpi-timeToRepair", "timeToRepair", "timeToRepair", DATA.kpis.timeToRepair.thresholds);
+      renderKpiCard("kpi-responseTime", "responseTime", "responseTime", DATA.kpis.responseTime.thresholds);
+
+      // Drivers + flow
+      renderDrivers();
+      renderFlow();
+
+      // Collapsed details
+      renderDetails();
+    }
+
+    renderAll();
+  </script>
+</body>
+</html>
